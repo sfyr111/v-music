@@ -1,6 +1,6 @@
 <template>
   <div class="recommend" ref="recommend">
-    <scroll class="recommend-content" :data="discList">
+    <scroll ref="scroll" class="recommend-content" :data="discList">
       <div>
         <div v-if="recommends.length" class="slider-wrapper">
           <slider>
@@ -16,7 +16,7 @@
           <ul>
             <li v-for="item in discList" class="item">
               <div class="icon">
-                <img width="60" height="60" :src="item.imgurl" alt="">
+                <img @load="loadImage" width="60" height="60" :src="item.imgurl" alt="">
               </div>
               <div class="text">
                 <h2 class="name" v-html="item.creator.name"></h2>
@@ -44,8 +44,10 @@
       }
     },
     created() {
-      this._getRecommend()
-      this._getDiscList()
+      setTimeout(() => {
+        this._getRecommend()
+        this._getDiscList()
+      }, 20)
     },
     methods: {
       _getRecommend() {
@@ -61,6 +63,13 @@
             this.discList = res.data.list
           }
         })
+      },
+      loadImage() {
+        if (!this.checkLoaded) {
+          this.$refs.scroll.refresh()
+          this.checkLoaded = true
+        }
+        this.$refs.scroll.refresh()
       }
     },
     components: {
