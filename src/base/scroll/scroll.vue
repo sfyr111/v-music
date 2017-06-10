@@ -10,7 +10,7 @@
     props: {
       probeType: {
         type: Number,
-        default: 1
+        default: 1 // 1节流 3不节流
       },
       click: {
         type: Boolean,
@@ -19,6 +19,10 @@
       data: {
         type: Array,
         default: null
+      },
+      listenScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -35,6 +39,11 @@
           probeType: this.probeType,
           click: this.click
         })
+        if (this.listenScroll) {
+          this.scroll.on('scroll', pos => {
+            this.$emit('scroll', pos)
+          })
+        }
       },
       enable() {
         this.scroll && this.scroll.enable()
@@ -44,12 +53,19 @@
       },
       refresh() {
         this.scroll && this.scroll.refresh()
+      },
+      scrollTo() {
+        this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
+      },
+      scrollToElement() {
+        this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments) // 第二个参数是滚动延迟
       }
     },
     watch: {
       data() {
         setTimeout(() => {
           this.refresh()
+          console.log(this.$refs.wrapper.clientHeight)
         }, 20)
       }
     }
