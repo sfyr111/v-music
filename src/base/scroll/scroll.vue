@@ -65,7 +65,6 @@
       data() {
         setTimeout(() => {
           this.refresh()
-          console.log(this.$refs.wrapper.clientHeight)
         }, 20)
       }
     }
