@@ -22,7 +22,7 @@
             :data="songs"
             @scroll="scroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list :songs="songs" @select="selectItem"></song-list>
       </div>
     </scroll>
     <div class="loading-container" v-show="!songs.length">
@@ -36,6 +36,7 @@
   import SongList from 'base/song-list/song-list'
   import Loading from 'base/loading/loading'
   import { prefixStyle } from 'common/js/dom'
+  import { mapActions } from 'vuex'
 
   const RESERVED_HEIGHT = 40
   const transform = prefixStyle('transform')
@@ -75,7 +76,7 @@
       this.imageHeight = this.$refs.bgImage.clientHeight
       this.minTranslateY = -this.imageHeight + RESERVED_HEIGHT
       // scroll ref=list 是个VueComponent对象
-      this.$refs.list.$el.style.top = `${this.imageHeight}px` // list的top值为背景图的高度
+      this.$refs.list.$el.style.top = `${this.imageHeight}px` // 滚动list的top值为背景图的高度
     },
     methods: {
       scroll(pos) {
@@ -83,7 +84,16 @@
       },
       back() {
         this.$router.back()
-      }
+      },
+      selectItem(item, index) {
+        this.selectPlay({
+          list: this.songs,
+          index
+        })
+      },
+      ...mapActions([
+        'selectPlay'
+      ])
     },
     watch: {
       scrollY(newY) {
