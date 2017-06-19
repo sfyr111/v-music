@@ -163,7 +163,7 @@
     watch: {
       currentSong() {
         this.$nextTick(() => {
-          this.refs.audio.play()
+          this.$refs.audio.play()
         })
       },
       playing(newPlaying) {
