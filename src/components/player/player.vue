@@ -26,6 +26,10 @@
               <img class="image" :src="currentSong.image">
             </div>
           </div>
+          <div class="playing-lyric-wrapper">
+            <div class="playing-lyric">
+            {{playingLyric}}</div>
+          </div>
         </div>
         <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
           <div class="lyric-wrapper">
@@ -119,7 +123,8 @@
         radius: 32,
         currentLyric: null,
         currentLineNum: 0,
-        currentShow: 'cd'
+        currentShow: 'cd',
+        playingLyric: ''
       }
     },
     computed: {
@@ -205,6 +210,9 @@
         }
         this.setPlayingState(!this.playing)
         this.songReady = true
+        if (this.currentLyric) {
+          this.currentLyric.togglePlay()
+        }
       },
       end() {
         if (this.mode === playMode.loop) {
@@ -216,18 +224,25 @@
       loop() {
         this.$refs.audio.currentTime = 0
         this.$refs.audio.play()
+        if (this.currentLyric) {
+          this.currentLyric.seek(0)
+        }
       },
       next() {
         if (!this.songReady) {
           return
         }
-        let index = this.currentIndex + 1
-        if (index === this.playlist.length) {
-          index = 0
-        }
-        this.setCurrentIndex(index)
-        if (!this.playing) {
-          this.togglePlaying()
+        if (this.playlist.length === 1) {
+          this.loop()
+        } else {
+          let index = this.currentIndex + 1
+          if (index === this.playlist.length) {
+            index = 0
+          }
+          this.setCurrentIndex(index)
+          if (!this.playing) {
+            this.togglePlaying()
+          }
         }
         this.songReady = true
       },
@@ -235,13 +250,17 @@
         if (!this.songReady) {
           return
         }
-        let index = this.currentIndex - 1
-        if (index === -1) {
-          index = this.playlist.length - 1
-        }
-        this.setCurrentIndex(index)
-        if (!this.playing) {
-          this.togglePlaying()
+        if (this.playlist.length === 1) {
+          this.loop()
+        } else {
+          let index = this.currentIndex - 1
+          if (index === -1) {
+            index = this.playlist.length - 1
+          }
+          this.setCurrentIndex(index)
+          if (!this.playing) {
+            this.togglePlaying()
+          }
         }
         this.songReady = true
       },
@@ -261,9 +280,13 @@
         return `${minute}:${second}`
       },
       onProgressBarChange(percent) {
+        const currentTime = this.currentSong.duration * percent
         this.$refs.audio.currentTime = this.currentSong.duration * percent
         if (!this.playing) {
           this.togglePlaying()
+        }
+        if (this.currentLyric) {
+          this.currentLyric.seek(currentTime * 1000)
         }
       },
       changeMode() {
@@ -290,7 +313,10 @@
           if (this.playing) {
             this.currentLyric.play()
           }
-          console.log(this.currentLyric)
+        }).catch(() => {
+          this.currentLyric = null
+          this.playingLyric = ''
+          this.currentLineNum = 0
         })
       },
       handleLyric({ lineNum, txt }) {
@@ -301,6 +327,7 @@
         } else {
           this.$refs.lyricList.scrollTo(0, 0, 1000)
         }
+        this.playingLyric = txt
       },
       middleTouchStart(e) {
         this.touch.initiated = true
@@ -390,10 +417,17 @@
         if (newSong.id === oldSong.id) {
           return
         }
-        this.$nextTick(() => {
+        if (this.currentLyric) {
+          this.currentLyric.stop()
+        }
+        // this.$nextTick(() => {
+        //   this.$refs.audio.play()
+        //   this.getLyric()
+        // })
+        setTimeout(() => {
           this.$refs.audio.play()
           this.getLyric()
-        })
+        }, 1000) // 解决微信问题
       },
       playing(newPlaying) {
         const audio = this.$refs.audio // 这里也会被watch
