@@ -39,7 +39,10 @@
   import Slider from 'base/slider/slider'
   import { getRecommend, getDiscList } from 'api/recommend'
   import { ERR_OK } from 'api/config'
+  import { playlistMixin } from 'common/js/mixin'
+
   export default {
+    mixins: [playlistMixin],
     name: 'recommend',
     data() {
       return {
@@ -73,6 +76,11 @@
           this.$refs.scroll.refresh()
           this.checkLoaded = true
         }
+        this.$refs.scroll.refresh()
+      },
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+        this.$refs.recommend.style.bottom = bottom
         this.$refs.scroll.refresh()
       }
     },

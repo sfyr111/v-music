@@ -97,6 +97,9 @@
       scroll(pos) { // 组件派发来的
         this.scrollY = pos.y
       },
+      refresh() {
+        this.$refs.listview.refresh()
+      },
       _scrollTo(index) {
         if (index !== 0 && !index) { // touchstart到上下空白处
           return
