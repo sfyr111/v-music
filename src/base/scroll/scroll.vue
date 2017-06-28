@@ -23,6 +23,14 @@
       listenScroll: {
         type: Boolean,
         default: false
+      },
+      pullup: {
+        type: Boolean,
+        default: false
+      },
+      pulldown: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -39,9 +47,27 @@
           probeType: this.probeType,
           click: this.click
         })
+
         if (this.listenScroll) {
           this.scroll.on('scroll', pos => {
             this.$emit('scroll', pos)
+          })
+        }
+
+        if (this.pullup) {
+          this.scroll.on('scrollEnd', () => {
+            if (this.scroll.y <= this.scroll.maxScrollY + 50) {
+              this.$emit('scrollToEnd')
+            }
+          })
+        }
+
+        if (this.pulldown) {
+          this.scroll.on('touchend', (pos) => {
+            // 下拉动作
+            if (pos.y > 50) {
+              this.$emit('pulldown')
+            }
           })
         }
       },

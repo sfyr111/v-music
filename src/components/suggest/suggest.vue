@@ -1,6 +1,13 @@
 <template>
-  <div class="suggest">
+  <scroll class="suggest" 
+          :data="result" 
+          :pullup="pullup"
+          :pulldown="pulldown"
+          @scrollToEnd="searchMore"
+          @pulldown="searchRefresh"
+          ref="suggest">
     <ul class="suggest-list">
+      <loading v-show="hasRefresh" title=""></loading>
       <li class="suggest-item" v-for="(item, index) in result" :key="index">
         <div class="icon">
           <i :class="getIconCls(item)"></i>
@@ -9,16 +16,20 @@
           <p class="text" v-html="getDisplayName(item)"></p>
         </div>
       </li>
+      <loading v-show="hasMore" title=""></loading>
     </ul>
-  </div>
+  </scroll>
 </template>
 
 <script>
   import { search } from 'api/search'
   import { ERR_OK } from 'api/config'
   import { createSong } from 'common/js/song'
+  import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
 
   const TYPE_SINGER = 'singer'
+  const perpage = 20
 
   export default {
     props: {
@@ -34,10 +45,36 @@
     data() {
       return {
         page: 1,
-        result: []
+        result: [],
+        pullup: true,
+        pulldown: true,
+        hasMore: true,
+        hasRefresh: false
       }
     },
     methods: {
+      searchMore() {
+        if (!this.hasMore) {
+          return
+        }
+        this.page++
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          if (res.code === ERR_OK) {
+            this.result = this.result.concat(this._genResult(res.data))
+            this._checkMore(res.data)
+          }
+        })
+      },
+      searchRefresh() {
+        this.page = 1
+        this.hasRefresh = true
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          if (res.code === ERR_OK) {
+            this.result = this._genResult(res.data)
+            this.hasRefresh = false
+          }
+        })
+      },
       getIconCls(item) {
         if (item.type === TYPE_SINGER) {
           return 'icon-mine'
@@ -53,11 +90,22 @@
         }
       },
       _search() {
-        search(this.query, this.page, this.showSinger).then((res) => {
+        this.page = 1 // 每当query改变的时候都重新搜索第一页同时滚动到顶
+        this.hasMore = true
+        this.$refs.suggest.scrollTo(0, 0)
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
           if (res.code === ERR_OK) {
             this.result = this._genResult(res.data)
+            this._checkMore(res.data)
+            this.hasRefresh = false
           }
         })
+      },
+      _checkMore(data) {
+        const song = data.song
+        if (!song.list.length || (song.curnum + song.curpage * perpage > song.totalnum)) {
+          this.hasMore = false
+        }
       },
       _genResult(data) {
         let ret = []
@@ -83,6 +131,10 @@
       query() {
         this._search()
       }
+    },
+    components: {
+      Scroll,
+      Loading
     }
   }
 </script>
