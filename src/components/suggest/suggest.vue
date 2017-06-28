@@ -53,7 +53,7 @@
       }
     },
     methods: {
-      searchMore() {
+      searchMore() { // 上拉逻辑
         if (!this.hasMore) {
           return
         }
@@ -65,7 +65,7 @@
           }
         })
       },
-      searchRefresh() {
+      searchRefresh() { // 下拉逻辑
         this.page = 1
         this.hasRefresh = true
         search(this.query, this.page, this.showSinger, perpage).then((res) => {
@@ -90,7 +90,7 @@
         }
       },
       _search() {
-        this.page = 1 // 每当query改变的时候都重新搜索第一页同时滚动到顶
+        this.page = 1 // 每当query改变的时候都重新搜索第一页 做重置，把上拉和下拉的逻辑分开
         this.hasMore = true
         this.$refs.suggest.scrollTo(0, 0)
         search(this.query, this.page, this.showSinger, perpage).then((res) => {
