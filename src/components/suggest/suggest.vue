@@ -111,6 +111,7 @@
         } else {
           this.insertSong(item)
         }
+        this.$emit('select') // 组件内不做存储逻辑
       },
       listScroll() {
         this.$emit('listScroll')
