@@ -28,7 +28,7 @@
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
   import Singer from 'common/js/singer'
-  import { mapMutations } from 'vuex'
+  import { mapMutations, mapActions } from 'vuex'
 
   const TYPE_SINGER = 'singer'
   const perpage = 20
@@ -101,6 +101,8 @@
             path: `/search/${singer.id}`
           })
           this.setSinger(singer)
+        } else {
+          this.insertSong(item)
         }
       },
       _search() {
@@ -142,7 +144,10 @@
       },
       ...mapMutations({
         setSinger: 'SET_SINGER'
-      })
+      }),
+      ...mapActions([
+        'insertSong'
+      ])
     },
     watch: {
       query() {
