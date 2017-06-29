@@ -3,8 +3,10 @@
           :data="result" 
           :pullup="pullup"
           :pulldown="pulldown"
+          :beforeScroll="beforeScroll"
           @scrollToEnd="searchMore"
           @pulldown="searchRefresh"
+          @beforeScroll="listScroll"
           ref="suggest">
     <ul class="suggest-list">
       <loading v-show="hasRefresh" title=""></loading>
@@ -18,6 +20,9 @@
       </li>
       <loading v-show="hasMore" title=""></loading>
     </ul>
+    <div class="no-result-wrapper">
+      <no-result v-show="!hasMore && !result.length" title="抱歉，暂无搜索结果"></no-result>
+    </div>
   </scroll>
 </template>
 
@@ -27,6 +32,7 @@
   import { createSong } from 'common/js/song'
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
+  import NoResult from 'base/no-result/no-result'
   import Singer from 'common/js/singer'
   import { mapMutations, mapActions } from 'vuex'
 
@@ -50,6 +56,7 @@
         result: [],
         pullup: true,
         pulldown: true,
+        beforeScroll: true,
         hasMore: true,
         hasRefresh: false
       }
@@ -105,6 +112,9 @@
           this.insertSong(item)
         }
       },
+      listScroll() {
+        this.$emit('listScroll')
+      },
       _search() {
         this.page = 1 // 每当query改变的时候都重新搜索第一页 做重置，把上拉和下拉的逻辑分开
         this.hasMore = true
@@ -156,7 +166,8 @@
     },
     components: {
       Scroll,
-      Loading
+      Loading,
+      NoResult
     }
   }
 </script>

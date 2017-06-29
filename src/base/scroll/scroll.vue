@@ -31,6 +31,10 @@
       pulldown: {
         type: Boolean,
         default: false
+      },
+      beforeScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -68,6 +72,12 @@
             if (pos.y > 50) {
               this.$emit('pulldown')
             }
+          })
+        }
+
+        if (this.beforeScroll) {
+          this.scroll.on('beforeScrollStart', () => {
+            this.$emit('beforeScroll')
           })
         }
       },
