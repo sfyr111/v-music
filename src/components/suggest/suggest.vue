@@ -8,7 +8,7 @@
           ref="suggest">
     <ul class="suggest-list">
       <loading v-show="hasRefresh" title=""></loading>
-      <li class="suggest-item" v-for="(item, index) in result" :key="index">
+      <li @click="selectItem(item)" class="suggest-item" v-for="(item, index) in result" :key="index">
         <div class="icon">
           <i :class="getIconCls(item)"></i>
         </div>
@@ -27,6 +27,8 @@
   import { createSong } from 'common/js/song'
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
+  import Singer from 'common/js/singer'
+  import { mapMutations } from 'vuex'
 
   const TYPE_SINGER = 'singer'
   const perpage = 20
@@ -89,6 +91,18 @@
           return `${item.name}-${item.singer}`
         }
       },
+      selectItem(item) {
+        if (item.type === TYPE_SINGER) {
+          const singer = new Singer({
+            id: item.singermid,
+            name: item.name
+          })
+          this.$router.push({
+            path: `/search/${singer.id}`
+          })
+          this.setSinger(singer)
+        }
+      },
       _search() {
         this.page = 1 // 每当query改变的时候都重新搜索第一页 做重置，把上拉和下拉的逻辑分开
         this.hasMore = true
@@ -125,7 +139,10 @@
           }
         })
         return ret
-      }
+      },
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      })
     },
     watch: {
       query() {
