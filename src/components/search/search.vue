@@ -27,6 +27,7 @@
   import Suggest from 'components/suggest/suggest'
   import { getHotKey } from 'api/search'
   import { ERR_OK } from 'api/config'
+  import { mapActions } from 'vuex'
   
   export default {
     created() {
@@ -49,7 +50,7 @@
         this.$refs.searchBox.blur()
       },
       saveSearch() {
-        
+        this.saveSearchHistory(this.query)
       },
       _getHotKey() {
         getHotKey().then((res) => {
@@ -57,7 +58,10 @@
             this.hotKey = res.data.hotkey.slice(0, 10)
           }
         })
-      }
+      },
+      ...mapActions([
+        'saveSearchHistory'
+      ])
     },
     components: {
       SearchBox,
