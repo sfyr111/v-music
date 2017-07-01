@@ -113,6 +113,9 @@
         }
         this.$emit('select') // 组件内不做存储逻辑
       },
+      refresh() {
+        this.$refs.suggest.refresh()
+      },
       listScroll() {
         this.$emit('listScroll')
       },

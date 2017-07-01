@@ -84,19 +84,21 @@
         <p class="desc" v-html="currentSong.singer"></p>
       </div>
       <div class="control">
-      </div>
-      <div class="control">
         <progress-circle :radius="radius" :percent="percent">
           <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
         </progress-circle>
       </div>
+      <div class="control">
+       <i class="icon-playlist"></i>
+      </div>
     </div>
     </transition>
-    <audio :src="currentSong.url"       ref="audio" 
-    @canplay="ready" 
-    @error="error" 
-    @timeupdate="updateTime"
-    @ended="end"></audio>
+    <audio :src="currentSong.url"
+           ref="audio" 
+           @canplay="ready" 
+           @error="error" 
+           @timeupdate="updateTime"
+           @ended="end"></audio>
   </div>
 </template>
 

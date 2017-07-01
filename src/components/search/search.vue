@@ -3,21 +3,34 @@
     <div class="search-box-wrapper">
       <search-box @query="onQueryChange" ref="searchBox"></search-box>
     </div>
-    <div class="shortcut-wrapper" v-show="!query">
-      <div class="shortcut">
-        <div class="hot-key">
-          <h1 class="title">热门搜索</h1>
-          <ul>
-            <li class="item" @click="addQuery(item.k)" v-for="(item, index) in hotKey" :key="index">
-              <span>{{item.k}}</span>
-            </li>
-          </ul>
+    <div class="shortcut-wrapper" v-show="!query" ref="shortcutWrapper">
+      <scroll class="shortcut" :data="shortcut" ref="shortcut">
+      <!-- scroll高度是根据包裹下的第一个元素计算的，所以需要个包裹 -->
+        <div>
+          <div class="hot-key">
+            <h1 class="title">热门搜索</h1>
+            <ul>
+              <li class="item" @click="addQuery(item.k)" v-for="(item, index) in hotKey" :key="index">
+                <span>{{item.k}}</span>
+              </li>
+            </ul>
+          </div>
+          <div class="search-history" v-show="searchHistory.length">
+            <h1 class="title">
+              <span class="text">搜索历史</span>
+              <span class="clear" @click="showConfirm">
+                <i class="icon-clear"></i>
+              </span>
+            </h1>
+            <search-list @select="addQuery" @delete="deleteSearchHistory" :searches="searchHistory"></search-list>
+          </div>
         </div>
-      </div>
+      </scroll>
     </div>
-    <div class="search-result" v-show="query">
-      <suggest :query="query" @listScroll="blurInput" @select="saveSearch"></suggest>
+    <div class="search-result" v-show="query" ref="searchResult">
+      <suggest :query="query" @listScroll="blurInput" @select="saveSearch" ref="suggest"></suggest>
     </div>
+    <confirm ref="confirm" text="是否清空所有搜索历史" confirmBtnText="清空" @confirm="clearSearchHistory"></confirm>
     <router-view></router-view>
   </div>
 </template>
@@ -25,11 +38,16 @@
 <script>
   import SearchBox from 'base/search-box/search-box'
   import Suggest from 'components/suggest/suggest'
+  import SearchList from 'base/search-list/search-list'
+  import Confirm from 'base/confirm/confirm'
+  import Scroll from 'base/scroll/scroll'
   import { getHotKey } from 'api/search'
   import { ERR_OK } from 'api/config'
-  import { mapActions } from 'vuex'
+  import { mapActions, mapGetters } from 'vuex'
+  import { playlistMixin } from 'common/js/mixin'
   
   export default {
+    mixins: [playlistMixin],
     created() {
       this._getHotKey()
     },
@@ -39,7 +57,24 @@
         query: ''
       }
     },
+    computed: {
+      shortcut() { // 提供给scroll同时监视两个异步获取的数据
+        return this.hotKey.concat(this.searchHistory)
+      },
+      ...mapGetters([
+        'searchHistory'
+      ])
+    },
     methods: {
+      handlePlaylist(playlist) {
+        const bottom = playlist.length > 0 ? '60px' : ''
+
+        this.$refs.shortcutWrapper.style.bottom = bottom
+        this.$refs.shortcut.refresh()
+
+        this.$refs.searchResult.style.bottom = bottom
+        this.$refs.suggest.refresh()
+      },
       onQueryChange(query) {
         this.query = query
       },
@@ -52,6 +87,15 @@
       saveSearch() {
         this.saveSearchHistory(this.query)
       },
+      // deleteOne(item) {
+      //   this.deleteSearchHistory(item)
+      // },
+      // deleteAll() {
+      //   this.clearSearchHistory()
+      // },
+      showConfirm() {
+        this.$refs.confirm.show()
+      },
       _getHotKey() {
         getHotKey().then((res) => {
           if (res.code === ERR_OK) {
@@ -60,12 +104,26 @@
         })
       },
       ...mapActions([
-        'saveSearchHistory'
+        'saveSearchHistory',
+        'deleteSearchHistory',
+        'clearSearchHistory'
       ])
+    },
+    watch: {
+      query(newQuery) {
+        if (!newQuery) {
+          setTimeout(() => {
+            this.$refs.shortcut.refresh()
+          }, 20)
+        }
+      }
     },
     components: {
       SearchBox,
-      Suggest
+      Suggest,
+      SearchList,
+      Confirm,
+      Scroll
     }
   }
 </script>
