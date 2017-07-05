@@ -11,11 +11,11 @@
             </span>
           </h1>
         </div>
-        <div class="list-content">
+        <scroll class="list-content" :data="sequenceList" ref="listContent">
           <ul>
-            <li class="item">
-              <i class="current"></i>
-              <span class="text"></span>
+            <li class="item" v-for="(item, index) in sequenceList" :key="index" @click="selectItem(item, index)">
+              <i class="current" :class="getCurrentIcon(item)"></i>
+              <span class="text">{{item.name}}</span>
               <span class="like">
                 <i></i>
               </span>
@@ -24,7 +24,7 @@
               </span>
             </li>
           </ul>
-        </div>
+        </scroll>
         <div class="list-operate">
           <div class="add">
             <i class="icon-add"></i>
@@ -40,19 +40,55 @@
 </template>
 
 <script>
+  import { mapGetters, mapMutations } from 'vuex'
+  import { playMode } from 'common/js/config.js'
+  import Scroll from 'base/scroll/scroll'
+
   export default {
     data() {
       return {
         showFlag: false
       }
     },
+    computed: {
+      ...mapGetters([
+        'sequenceList',
+        'currentSong',
+        'playlist'
+      ])
+    },
     methods: {
       show() {
         this.showFlag = true
+        // display: none前没计算高度
+        setTimeout(() => {
+          this.$refs.listContent.refresh()
+        }, 20)
       },
       hide() {
         this.showFlag = false
-      }
+      },
+      getCurrentIcon(item) {
+        if (this.currentSong.id === item.id) {
+          return 'icon-play'
+        } else {
+          return ''
+        }
+      },
+      selectItem(item, index) {
+        if (this.mode === playMode.random) {
+          index = this.playlist.findIndex((song) => {
+            return song.id === item.id
+          })
+        }
+        this.setCurrentIndex(index)
+      },
+      ...mapMutations({
+        setCurrentIndex: 'SET_CURRENT_INDEX'
+      })
+    },
+    components: {
+      Scroll
     }
   }
 </script>
