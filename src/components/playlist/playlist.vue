@@ -19,7 +19,7 @@
               <span class="like">
                 <i></i>
               </span>
-              <span class="delete">
+              <span class="delete" @click="deleteOne(item)">
                 <span class="icon-delete"></span>
               </span>
             </li>
@@ -91,6 +91,8 @@
           return current.id === song.id
         })
         this.$refs.listContent.scrollToElement(this.$refs.listItem[index], 300)
+      },
+      deleteOne(item) {
       },
       ...mapMutations({
         setCurrentIndex: 'SET_CURRENT_INDEX',
